@@ -29,21 +29,28 @@ def write_news_file(title):
     with open(LAST_NEWS_FILE, "w") as file:
         file.write(title)
 
+def replace_break_lines(text):
+    text_replaced = text.replace("\n", "<br>")
+    return text_replaced
+
 def get_news_content():
     get_last_news_title().click()
     news_title= driver.find_element(By.CLASS_NAME, "page-header")
     news_body = driver.find_element(By.CLASS_NAME, "field-items")
+    news_url = driver.current_url
     return {
         "title": news_title.text,
-        "body": news_body.text
+        "body": replace_break_lines(news_body.text),
+        "url": news_url
     }
 
 last_news_title = get_last_news_title().text
 title_file = read_news_file()
 
-if last_news_title != title_file:
+if last_news_title == title_file:
     content = get_news_content()
     write_news_file(last_news_title)
+    print(content)
     print(green_message("\n\nNova notícia disponível: "), last_news_title, "\n\n")
 else:
     print(red_message("\n\nSem novas notícias"), "\n\n")
