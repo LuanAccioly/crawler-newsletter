@@ -33,15 +33,35 @@ def replace_break_lines(text):
     text_replaced = text.replace("\n", "<br>")
     return text_replaced
 
+def get_links():
+    try:
+        files_section = driver.find_element(By.CLASS_NAME, "field-name-field-documento")
+    except:
+        return []
+    news_files = files_section.find_elements(By.TAG_NAME, "a")
+    pdfs_content = []
+
+    for file in news_files:
+        file_name = file.text
+        file_url = file.get_attribute("href")
+        pdfs_content.append({
+            "name": file_name,
+            "url": file_url
+        })
+    return pdfs_content
+
 def get_news_content():
     get_last_news_title().click()
     news_title= driver.find_element(By.CLASS_NAME, "page-header")
-    news_body = driver.find_element(By.CLASS_NAME, "field-items")
+    news_body = driver.find_element(By.CSS_SELECTOR, "div[property='content:encoded']")
     news_url = driver.current_url
+    news_files = get_links()
+    
     return {
         "title": news_title.text,
         "body": replace_break_lines(news_body.text),
-        "url": news_url
+        "url": news_url,
+        "files": news_files
     }
 
 last_news_title = get_last_news_title().text
