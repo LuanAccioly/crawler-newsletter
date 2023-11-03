@@ -17,7 +17,7 @@ def red_message(message):
     return f"\033[1;31m{message}\033[0m"
 
 def get_last_news_title():
-    last_news = driver.find_element(By.CLASS_NAME, "views-row-1")
+    last_news = driver.find_element(By.CLASS_NAME, "views-row-first")
     last_news_title = last_news.find_element(By.CLASS_NAME, "titulo_conteudo")
     return last_news_title
 
@@ -67,7 +67,7 @@ def get_news_content():
 last_news_title = get_last_news_title().text
 title_file = read_news_file()
 
-if last_news_title == title_file:
+if last_news_title != title_file:
     content = get_news_content()
     write_news_file(last_news_title)
     print(content)
