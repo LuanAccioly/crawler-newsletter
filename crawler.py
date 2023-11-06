@@ -1,6 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+import requests
+
+SEND_EMAIL_URL = "http://localhost:8800/email/send"
 
 UFRPE_PATH = "https://www.ufrpe.br/br/lista-de-noticias"
 LAST_NEWS_FILE = "last_news.txt"
@@ -64,15 +67,30 @@ def get_news_content():
         "files": news_files
     }
 
-last_news_title = get_last_news_title().text
-title_file = read_news_file()
+def send_email(content):
+    try:
+        response = requests.post(SEND_EMAIL_URL, json=content)
+        if response.status_code == 200:
+            print(green_message("\nNotícia enviada para a API com sucesso! "), "\n\n")
+        else:
+            print(red_message("\n\nErro na solicitação POST: ", response.status_code), "\n\n")
+    except:
+        print(red_message("\n\nFalha solicitação POST "), "\n\n")
+        return
+    
 
-if last_news_title != title_file:
-    content = get_news_content()
-    write_news_file(last_news_title)
-    print(content)
-    print(green_message("\n\nNova notícia disponível: "), last_news_title, "\n\n")
-else:
-    print(red_message("\n\nSem novas notícias"), "\n\n")
+    
 
-driver.close()
+if __name__ == "__main__":
+    last_news_title = get_last_news_title().text
+    title_file = read_news_file()
+
+    if last_news_title == title_file:
+        content = get_news_content()
+        write_news_file(last_news_title)
+        print(green_message("\n\nNova notícia disponível: "), last_news_title,)
+        send_email(content)
+    else:
+        print(red_message("\n\nSem novas notícias"), "\n\n")
+
+    driver.close()
