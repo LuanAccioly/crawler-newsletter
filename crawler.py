@@ -3,7 +3,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 
-# import requests
+import requests
 
 SEND_EMAIL_URL = "http://localhost:8800/email/send"
 
@@ -130,12 +130,12 @@ if __name__ == "__main__":
     last_news_title = get_last_news_title().text
     title_file = read_news_file()
 
-    if last_news_title == title_file:
+    if last_news_title != title_file:
         content = get_news_content()
         write_news_file(last_news_title)
-        # print(green_message("\n\nNova notícia disponível: "), last_news_title,)
-        print(content)
-        # send_email(content)
+        print(green_message("\n\nNova notícia disponível: "), last_news_title,)
+        # print(content)
+        send_email(content)
     else:
         print(red_message("\n\nSem novas notícias"), "\n\n")
 
