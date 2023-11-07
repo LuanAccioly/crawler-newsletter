@@ -126,14 +126,15 @@ def send_email(content):
         return
 
 
-if __name__ != "__main__":
+if __name__ == "__main__":
     last_news_title = get_last_news_title().text
     title_file = read_news_file()
 
     if last_news_title == title_file:
         content = get_news_content()
         write_news_file(last_news_title)
-        print(green_message("\n\nNova notícia disponível: "), last_news_title,)
+        # print(green_message("\n\nNova notícia disponível: "), last_news_title,)
+        print(content)
         # send_email(content)
     else:
         print(red_message("\n\nSem novas notícias"), "\n\n")
