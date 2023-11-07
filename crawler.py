@@ -1,7 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-import requests
+from bs4 import BeautifulSoup
+
+# import requests
 
 SEND_EMAIL_URL = "http://localhost:8800/email/send"
 
@@ -19,6 +21,10 @@ def green_message(message):
 def red_message(message):
     return f"\033[1;31m{message}\033[0m"
 
+def get_url():
+    return driver.current_url
+
+
 def get_last_news_title():
     last_news = driver.find_element(By.CLASS_NAME, "views-row-first")
     last_news_title = last_news.find_element(By.CLASS_NAME, "titulo_conteudo")
@@ -32,9 +38,14 @@ def write_news_file(title):
     with open(LAST_NEWS_FILE, "w") as file:
         file.write(title)
 
-def replace_break_lines(text):
-    text_replaced = text.replace("\n", "<br>")
+def replace_breaklines(text):
+    text_whithout_breaklines = text.replace("\n", " ")
+    return text_whithout_breaklines
+
+def replace_unwanted_tags(text):
+    text_replaced = text.replace("\xa0", " ")
     return text_replaced
+
 
 def get_links():
     try:
@@ -53,19 +64,55 @@ def get_links():
         })
     return pdfs_content
 
-def get_news_content():
-    get_last_news_title().click()
-    news_title= driver.find_element(By.CLASS_NAME, "page-header")
-    news_body = driver.find_element(By.CSS_SELECTOR, "div[property='content:encoded']")
-    news_url = driver.current_url
-    news_files = get_links()
+def get_images():
+    try:
+        content = driver.find_element(By.CLASS_NAME, "region-content")
+    except:
+        return []
     
-    return {
-        "title": news_title.text,
-        "body": replace_break_lines(news_body.text),
-        "url": news_url,
-        "files": news_files
+    images = content.find_elements(By.TAG_NAME, "img")
+    icons_path = "file/icons"
+    images_src = []
+
+    for image in images:
+        image_src = image.get_attribute("src")
+        
+        if icons_path in image_src:
+            continue
+
+        images_src.append(image_src)
+
+    return images_src
+
+def get_body():
+
+    news_body = driver.find_element(By.CSS_SELECTOR, "div[property='content:encoded']").get_attribute("innerHTML")
+    soup = BeautifulSoup(news_body, 'html.parser')
+
+    for img_tag in soup.find_all('img'):
+        img_tag.decompose()
+
+    news_body = replace_unwanted_tags(replace_breaklines(str(soup)))
+
+    return news_body
+
+def get_title():
+    news_title= driver.find_element(By.CLASS_NAME, "page-header").text
+    return news_title
+
+def get_news_content():
+
+    get_last_news_title().click()
+    
+    news = {
+        "title": get_title(),
+        "body": get_body(),
+        "url": get_url(),
+        "images": get_images(),
+        "files": get_links()
     }
+
+    return news
 
 def send_email(content):
     try:
@@ -77,11 +124,9 @@ def send_email(content):
     except:
         print(red_message("\n\nFalha solicitação POST "), "\n\n")
         return
-    
 
-    
 
-if __name__ == "__main__":
+if __name__ != "__main__":
     last_news_title = get_last_news_title().text
     title_file = read_news_file()
 
@@ -89,7 +134,7 @@ if __name__ == "__main__":
         content = get_news_content()
         write_news_file(last_news_title)
         print(green_message("\n\nNova notícia disponível: "), last_news_title,)
-        send_email(content)
+        # send_email(content)
     else:
         print(red_message("\n\nSem novas notícias"), "\n\n")
 
