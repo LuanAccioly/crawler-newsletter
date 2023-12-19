@@ -7,7 +7,7 @@ import requests
 
 SEND_EMAIL_URL = "http://localhost:8800/email/send"
 
-UFRPE_PATH = "https://www.ufrpe.br/br/lista-de-noticias"
+UFRPE_PATH = "https://www.ufrpe.br/br/comunicados-home"
 LAST_NEWS_FILE = "last_news.txt"
 
 options = webdriver.ChromeOptions()
